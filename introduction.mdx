@@ -1,0 +1,108 @@
+---
+title: "Introduction"
+description: "PvZ Portable is a cross-platform, community-driven reimplementation of Plants vs. Zombies: Game of the Year Edition."
+---
+
+PvZ Portable is an open-source project that brings the **100% authentic experience** of Plants vs. Zombies: GOTY Edition to virtually every modern platform. Built on SDL2 and OpenGL ES 2.0, it runs on everything from your desktop to your Nintendo Switch — without requiring any platform-specific hacks or vendor lock-in.
+
+<Warning>
+  PvZ Portable does **not** include any copyrighted game assets (images, music, fonts, or data files) owned by PopCap Games or Electronic Arts. You must supply your own `main.pak` and `properties/` folder from a **legally purchased copy** of Plants vs. Zombies: GOTY Edition.
+</Warning>
+
+## Supported platforms
+
+| Platform | Data path | Status |
+|---|---|---|
+| Linux | Executable dir (resources); per-user app data for writable files | Works |
+| Windows | Executable dir (resources); per-user app data for writable files | Works |
+| macOS | Executable dir (resources); per-user app data for writable files | Works |
+| BSD family | Executable dir (resources); per-user app data for writable files | Works (verified on FreeBSD) |
+| Haiku | Executable dir (resources); per-user app data for writable files | Partially works: no music |
+| Android | `Android/data/io.github.wszqkzqk.pvzportable/files/` | Works |
+| iOS / iPadOS | App Documents directory (Files app) | Works (sideload only; unsigned IPA) |
+| Web (WASM) | Browser IndexedDB (saves); resources uploaded at runtime | Works (requires an HTTP server) |
+| Nintendo Switch | `sdmc:/switch/PvZPortable` | Works on real hardware. Kenji-NX crashes on boot. |
+| Nintendo 3DS | `sdmc:/3ds/PvZPortable` | May not have enough memory for Old 3DS; barely works on New 3DS (discontinued) |
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Truly cross-platform" icon="globe">
+    Runs on Linux, Windows, macOS, BSD, Android, iOS, WebAssembly, Nintendo Switch, and more. Supports x86_64, aarch64, riscv64, loongarch64, i686, and other CPU architectures, in both 32-bit and 64-bit builds.
+  </Card>
+  <Card title="Authentic gameplay" icon="gamepad">
+    Nearly 100% faithful recreation of the GOTY Edition, including all game modes, the Zen Garden, and mini-games. Window resizing is also supported — something the original game never allowed.
+  </Card>
+  <Card title="Portable saves" icon="floppy-disk">
+    The `.v4` mid-level save format lets you transfer saves between platforms. Move a save between Linux, Android, and Switch without crashes or corruption. Fully compatible with original global user data (`user*.dat`), including a fix for the 2038 year problem.
+  </Card>
+  <Card title="Multilingual" icon="language">
+    Supports game resource packages from official English, Chinese, German, Spanish, French, and Italian GOTY editions. The engine handles BOM-encoded text and Windows-1252 to UTF-8 conversion automatically.
+  </Card>
+  <Card title="Modern rendering" icon="display">
+    Uses OpenGL ES 2.0, the common subset of virtually all modern GPU APIs. Desktop OpenGL 2.1 is used as a fallback. Optional ANGLE support translates calls to DirectX, Metal, or Vulkan when needed.
+  </Card>
+  <Card title="Open source" icon="code">
+    Licensed under LGPL-3.0-or-later. Written entirely from publicly available community research — no reverse engineering. Contributions welcome.
+  </Card>
+</CardGroup>
+
+## Game version compatibility
+
+PvZ Portable is designed and tested against **Plants vs. Zombies GOTY Edition 1.2.0.1073 EN** (the standalone PopCap release). Other versions are fully playable — all game mechanics work correctly — but may show minor cosmetic UI text differences caused by renamed string keys.
+
+| Version | Language | Notes |
+|---|---|---|
+| **1.2.0.1073 EN** | English | **Recommended.** Best out-of-box experience; no cosmetic issues. |
+| 1.2.0.1096 Steam | English (Steam) | Fully playable; minor cosmetic text differences. |
+| 1.2.0.1093 DE/ES/FR/IT | German, Spanish, French, Italian | Fully playable; minor cosmetic text differences. |
+| 1.1.0.1056 ZH | Chinese (based on 1.2.0.1073) | Fully playable; minor cosmetic text differences. |
+
+<Tip>
+  Use the **1.2.0.1073 EN** asset package for the best out-of-box experience. It requires no additional configuration.
+</Tip>
+
+See the [game assets guide](/game-assets) for details on cosmetic differences and how to fix them with a custom `properties/default.xml`.
+
+## Multilingual support
+
+PvZ Portable supports game resource data from non-English versions of Plants vs. Zombies GOTY Edition. The engine:
+
+- Handles **BOM-encoded text files** transparently.
+- Converts **legacy Windows-1252 encodings to UTF-8** automatically.
+
+If `properties/default.xml` and/or `properties/Layout.xml` exist in the game data directory, they are loaded **after** `LawnStrings.txt` and can override any string value. Both files are optional; when absent, built-in English defaults are used. Because `default.xml` takes priority over `LawnStrings.txt`, you can also create or edit your own `default.xml` to add or override any string key — a convenient way to fix version-specific display issues without modifying the engine.
+
+## Command-line parameters
+
+You can customize the resource and save data directories at launch using the following parameters:
+
+| Parameter | Description |
+|---|---|
+| `-resdir="<path>"` | Set the resource directory (where `main.pak` and `properties/` are located). Does not affect where the game saves data. |
+| `-savedir="<path>"` | Set the save data directory (where settings, savegames, caches, and screenshots are stored). Overrides the default OS-recommended application data path. |
+
+<Warning>
+  You **must** use the format `-param="<Your Path>"`. Space-separated values such as `-resdir path` are **not** supported.
+</Warning>
+
+## Legal notice
+
+This project is a manual reimplementation derived from community research (including [植物大战僵尸吧](https://tieba.baidu.com/f?ie=utf-8&kw=%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8), [PVZ Wiki](https://wiki.pvz1.com/doku.php?id=home), and [PvZ Tools](https://pvz.tools/memory/)). The author never reverse-engineered the original program, and code generated directly through reverse engineering will not be accepted. This project is:
+
+- **Not affiliated with, authorized, or endorsed by PopCap Games or Electronic Arts.**
+- Intended solely for educational purposes — cross-platform porting techniques, engine modernization, and learning how classic game logic adapts to various hardware architectures.
+- Non-commercial. The original game IP belongs to PopCap/EA.
+
+To play the game you **must** own a legal copy. See the [game assets guide](/game-assets) for where to purchase and how to set up your files.
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="Quick start" icon="rocket" href="/quickstart">
+    Download a prebuilt binary and start playing in minutes.
+  </Card>
+  <Card title="Game assets" icon="folder-open" href="/game-assets">
+    Learn how to obtain and set up your legally purchased game files.
+  </Card>
+</CardGroup>

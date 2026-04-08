@@ -1,97 +1,59 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "PvZ Portable"
+description: "A cross-platform community reimplementation of Plants vs. Zombies GOTY Edition — play on Linux, Windows, macOS, Android, iOS, WebAssembly, and Nintendo Switch."
 ---
 
-## Setting up
+PvZ Portable is a community-driven, open-source reimplementation of **Plants vs. Zombies: Game of the Year Edition**. Built on SDL2 and OpenGL ES 2.0, it delivers an authentic GOTY experience on virtually every modern platform — from your desktop to your Nintendo Switch.
 
-Get your documentation site up and running in minutes.
+<Warning>
+  PvZ Portable does **not** include any copyrighted game assets. You must supply your own `main.pak` and `properties/` folder from a legally purchased copy of Plants vs. Zombies GOTY Edition.
+</Warning>
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+## Get started
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Quick start" icon="rocket" href="/quickstart">
+    Download a prebuilt binary and start playing in minutes.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Game assets" icon="folder-open" href="/game-assets">
+    Learn how to obtain and set up your legally purchased game files.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Build from source" icon="hammer" href="/building/overview">
+    Compile PvZ Portable yourself for any supported platform.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Platform guides" icon="display" href="/platforms/android">
+    Platform-specific instructions for Android, iOS, web, and Nintendo Switch.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## Key features
 
-Everything you need to create world-class documentation.
+<CardGroup cols={2}>
+  <Card title="Truly cross-platform" icon="globe">
+    Runs on Linux, Windows, macOS, Android, iOS, WebAssembly, Nintendo Switch, and more. Supports x86_64, aarch64, riscv64, loongarch64, and other CPU architectures.
+  </Card>
+  <Card title="Authentic gameplay" icon="gamepad">
+    Nearly 100% faithful recreation of the GOTY Edition experience, including all game modes, the Zen Garden, and mini-games.
+  </Card>
+  <Card title="Portable saves" icon="floppy-disk">
+    The `.v4` save format lets you transfer mid-level saves between platforms — share a save between Linux, Android, and Switch seamlessly.
+  </Card>
+  <Card title="Multilingual" icon="language">
+    Supports English, Chinese, German, Spanish, French, and Italian game resource packages from official GOTY editions.
+  </Card>
+</CardGroup>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+## Play in your browser
 
-## Need inspiration?
+No build needed — open the [WebAssembly build](https://wszqkzqk.github.io/pvz-portable-wasm/pvz-portable.html) directly in your browser. Load your own game resources (ZIP or folder) and start playing. All files stay local; nothing is uploaded to any server.
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+## Save data & tools
+
+<CardGroup cols={2}>
+  <Card title="Save data overview" icon="database" href="/save-data/overview">
+    Understand global user data and mid-level save compatibility across platforms.
+  </Card>
+  <Card title="Save converter tool" icon="wrench" href="/save-data/converter-tool">
+    Use the Python script to inspect, export, and import `.v4` save files as human-readable YAML.
+  </Card>
+</CardGroup>

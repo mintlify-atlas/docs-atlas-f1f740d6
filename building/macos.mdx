@@ -1,0 +1,68 @@
+---
+title: "Build on macOS"
+description: "Install dependencies with Homebrew and build PvZ Portable on macOS."
+---
+
+## Install dependencies
+
+Install all required libraries using [Homebrew](https://brew.sh/):
+
+```bash
+brew install cmake dylibbundler jpeg-turbo libogg libopenmpt libpng libvorbis mpg123 ninja sdl2
+```
+
+`dylibbundler` is used after the build to bundle Homebrew-installed shared libraries into the distribution directory so the binary is self-contained.
+
+---
+
+## Build
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/wszqkzqk/PvZ-Portable.git
+    cd PvZ-Portable
+    ```
+  </Step>
+  <Step title="Configure with CMake">
+    ```bash
+    cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
+    ```
+  </Step>
+  <Step title="Compile">
+    ```bash
+    cmake --build build
+    ```
+
+    The binary is at `build/pvz-portable`.
+  </Step>
+  <Step title="Prepare distribution directory">
+    ```bash
+    mkdir -p dist/libs
+    cp build/pvz-portable dist/
+    strip -x dist/pvz-portable
+    ```
+  </Step>
+  <Step title="Bundle shared library dependencies">
+    ```bash
+    dylibbundler -of -b -x dist/pvz-portable -d dist/libs -p @executable_path/libs/
+    ```
+
+    This copies all Homebrew `.dylib` dependencies into `dist/libs/` and rewrites the binary's load paths so it can find them at runtime without relying on a Homebrew installation.
+  </Step>
+  <Step title="Sign the binary">
+    ```bash
+    codesign --force --deep -s - dist/pvz-portable
+    ```
+
+    Ad-hoc signing (`-s -`) is sufficient for local use. For distribution, replace `-s -` with your Developer ID certificate.
+  </Step>
+</Steps>
+
+---
+
+## Next steps
+
+Place `main.pak` and the `properties/` folder next to the `pvz-portable` binary in `dist/`, then run the executable. Save data is written to `~/Library/Application Support/io.github.wszqkzqk/PvZPortable/`.
+
+See the [build overview](/building/overview) for a full list of CMake configuration options.

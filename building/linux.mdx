@@ -1,0 +1,73 @@
+---
+title: "Build on Linux"
+description: "Install dependencies and build PvZ Portable on Arch Linux and Debian/Ubuntu."
+---
+
+## Install dependencies
+
+<Tabs>
+  <Tab title="Arch Linux">
+    ```bash
+    sudo pacman -S --needed base-devel cmake libjpeg-turbo libogg libopenmpt libpng libvorbis mpg123 ninja sdl2-compat
+    ```
+  </Tab>
+  <Tab title="Debian / Ubuntu">
+    ```bash
+    sudo apt install cmake ninja-build libogg-dev libjpeg-dev libopenmpt-dev libpng-dev libvorbis-dev libmpg123-dev libsdl2-dev
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Build
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/wszqkzqk/PvZ-Portable.git
+    cd PvZ-Portable
+    ```
+  </Step>
+  <Step title="Configure with CMake">
+    ```bash
+    cmake -G Ninja -B build
+    ```
+  </Step>
+  <Step title="Compile">
+    ```bash
+    cmake --build build
+    ```
+
+    The resulting binary is at `build/pvz-portable`.
+  </Step>
+</Steps>
+
+---
+
+## Release build (recommended)
+
+For optimized performance, configure with `Release` build type:
+
+```bash
+cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+To additionally target your CPU's specific instruction set:
+
+```bash
+cmake -G Ninja -B build \
+  -DCMAKE_C_FLAGS="-march=native" \
+  -DCMAKE_CXX_FLAGS="-march=native" \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+---
+
+## Next steps
+
+Place `main.pak` and the `properties/` folder next to the `pvz-portable` binary, then run the executable. Save data is written to `~/.local/share/io.github.wszqkzqk/PvZPortable/`.
+
+See the [build overview](/building/overview) for a full list of CMake configuration options.

@@ -1,0 +1,125 @@
+---
+title: "The .v4 save format"
+description: "Technical details of PvZ Portable's portable mid-level save format, including why it was created, how TLV serialization works, and developer guidelines for extending it."
+---
+
+## Why a new format was needed
+
+The original game's mid-level save format (`.dat`) writes raw memory structures directly to disk. This is fast but breaks whenever the in-memory layout changes — which happens across:
+
+- **Different CPU architectures** — x86, ARM, RISC-V, LoongArch all differ in alignment requirements and struct padding.
+- **32-bit vs 64-bit builds** — pointer sizes change, which shifts the layout of every struct that contains a pointer.
+- **Different compilers** — MSVC and GCC/Clang apply different padding rules and may choose different sizes for enum types.
+
+A `.dat` save written on Windows (MSVC, x86_64) will crash or produce garbage on an ARM Switch build or a 32-bit Android build. PvZ Portable supports all of these targets, so a new format was required.
+
+## How Format v4 works
+
+Format v4 serializes game objects field-by-field rather than dumping raw structs. The file is structured as follows:
+
+```
+[File Header - 24 bytes]
+  magic:       "PVZP_SAVE4\0\0"  (12 bytes)
+  version:     uint32_t LE       (4 bytes)
+  payloadSize: uint32_t LE       (4 bytes)
+  payloadCrc:  uint32_t LE       (4 bytes, zlib CRC-32 of payload)
+
+[Payload]
+  [Chunk] ...
+
+[Chunk]
+  chunkType: uint32_t LE
+  chunkSize: uint32_t LE
+  chunkData: bytes (chunkSize bytes)
+    [chunk_version: uint32_t LE = 1]
+    [field_id: uint32_t LE = 1]
+    [field_size: uint32_t LE]
+    [inner_data: bytes]
+```
+
+The inner data of each chunk uses **Type-Length-Value (TLV)** encoding: each field is stored as a `(field_id: u32, field_size: u32, data: bytes)` triple. Fields are identified by stable integer IDs rather than names or positions. Game objects (zombies, plants, mowers, grid items) live in `DataArray`-structured chunks that store a header followed by per-item TLV blobs.
+
+### Chunk types
+
+| ID | Chunk | Description |
+|----|-------|-------------|
+| 1 | `BOARD_BASE` | Core board state: wave number, sun count, background, timers, flags |
+| 2 | `ZOMBIES` | All zombie objects (DataArray, TLV per item) |
+| 3 | `PLANTS` | All plant objects (DataArray, TLV per item) |
+| 4 | `PROJECTILES` | Projectiles in flight |
+| 5 | `COINS` | Coins and collectibles on the board |
+| 6 | `MOWERS` | Lawn mower states |
+| 7 | `GRIDITEMS` | Gravestones, craters, ladders, portals, Vasebreaker pots, etc. |
+| 8 | `PARTICLE_EMITTERS` | Particle emitter instances |
+| 9 | `PARTICLE_PARTICLES` | Individual particles |
+| 10 | `PARTICLE_SYSTEMS` | Particle system state |
+| 11 | `REANIMATIONS` | Animation instances |
+| 12 | `TRAILS` | Trail effects |
+| 13 | `ATTACHMENTS` | Attachment effects |
+| 14 | `CURSOR` | Cursor object state |
+| 15 | `CURSOR_PREVIEW` | Cursor preview position |
+| 16 | `ADVICE` | On-screen hint widget |
+| 17 | `SEEDBANK` | Seed bank (packet count, conveyor state) |
+| 18 | `SEEDPACKETS` | Individual seed packet slots and cooldowns |
+| 19 | `CHALLENGE` | Challenge/minigame state (Beghouled, I, Zombie, Survival, etc.) |
+| 20 | `MUSIC` | Music playback state |
+
+### Fixed-width primitives everywhere
+
+All fields are written with explicit-width integer types and little-endian byte order, regardless of the host platform. There are no raw struct copies in the payload — every field is written individually via the `PortableSaveContext` helpers (`SyncInt32`, `SyncUInt32`, `SyncFloat`, `SyncBool`, `SyncInt64`, etc.).
+
+Enum values are serialized as `int32_t` or `uint32_t`, not as the underlying enum type, so they are unaffected by compiler enum-size choices.
+
+### Payload integrity
+
+The entire payload (everything after the 24-byte header) is protected by a zlib CRC-32 checksum stored in the header. The game verifies this on load and rejects corrupted files.
+
+## Cross-platform guarantees
+
+Because every field is written field-by-field with fixed-width little-endian integers, a `.v4` save file produced on any supported platform can be loaded on any other:
+
+- x86_64 Linux → ARM64 Nintendo Switch
+- Windows (MSVC) → LoongArch Linux
+- 32-bit Android → 64-bit macOS
+- Any little-endian platform → any other little-endian platform
+
+<Note>
+Big-endian support is implemented at the serialization layer (all integers are explicitly written little-endian), but has not been tested on real hardware due to lack of accessible big-endian platforms.
+</Note>
+
+## Year 2038 fix
+
+The original `.dat` format stores timestamps as 32-bit signed integers (seconds since the Unix epoch), which overflows in 2038. The `.v4` format stores all timestamps as 64-bit integers (`int64_t`), eliminating this problem while maintaining save compatibility with the existing global user data format (`user*.dat`).
+
+## Legacy `.dat` compatibility
+
+When the game starts and finds a `game*.dat` file with no corresponding `.v4`:
+
+1. The `.dat` file is loaded using the legacy raw-struct reader.
+2. The level state is immediately re-serialized to a `.v4` file.
+3. The `.dat` file is deleted after the `.v4` is successfully written.
+
+If both a `.dat` and a `.v4` exist for the same slot, the game loads the `.v4` and leaves the `.dat` untouched (it will not be deleted in that case).
+
+## Developer guidelines
+
+These rules apply when adding new fields or modifying serialization code:
+
+<AccordionGroup>
+  <Accordion title="Never reuse a TLV field ID">
+    Each field ID in `BoardBaseFieldId` (and the equivalent per-object field definitions) is part of the on-disk format contract. Once assigned, an ID must not be reused for a different field. The IDs in `SaveGame.cpp` are explicitly commented: _"These IDs are part of the on-disk format and must NOT be renumbered."_
+
+    To add a new field, assign the next unused integer ID and append it to the relevant enum.
+  </Accordion>
+  <Accordion title="Provide defaults for missing fields">
+    When loading a save produced by an older version of the game, new TLV fields will simply be absent. The loader skips unknown field IDs and leaves the corresponding struct member at its zero-initialized default. New code must therefore:
+    - Zero-initialize objects before reading (`ResetItemForRead` is used for this)
+    - Use sensible defaults for all new fields so that old saves load correctly
+  </Accordion>
+  <Accordion title="No raw struct dumps">
+    Do not use `SyncBytes` to serialize an entire struct at once. Every field that may ever differ in size or layout across platforms must be synced individually with a typed method (`SyncInt32`, `SyncFloat`, `SyncBool`, etc.). Raw byte dumps are only acceptable for fixed-size, platform-independent blobs (e.g., a fixed-length ASCII string constant).
+  </Accordion>
+  <Accordion title="Enums need explicit casts">
+    Enum fields must be cast to `int32_t` or `uint32_t` before writing, not written as the enum's underlying type. Use the `SyncEnum32` / `SyncEnumU32` helpers defined in `SaveGame.cpp`, or `PortableSaveContext::SyncEnum`. This ensures the field is always exactly 4 bytes regardless of what the compiler chooses for the enum's underlying type.
+  </Accordion>
+</AccordionGroup>

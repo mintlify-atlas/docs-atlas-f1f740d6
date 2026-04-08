@@ -1,0 +1,93 @@
+---
+title: "iOS / iPadOS"
+description: "Sideload PvZ Portable on iOS 15.0+ using the unsigned IPA from GitHub Releases."
+---
+
+<Info>
+  PvZ Portable does not include game assets. You must provide `main.pak` and the `properties/` folder from a legally purchased copy of Plants vs. Zombies: GOTY Edition. See the [game assets guide](/game-assets) for details.
+</Info>
+
+## Requirements
+
+| Requirement | Details |
+| ----------- | ------- |
+| iOS / iPadOS version | 15.0 or later |
+| Architecture | arm64 |
+
+## Getting the IPA
+
+Download `pvz-portable-ios-arm64.ipa` (unsigned) from the [GitHub Releases page](https://github.com/wszqkzqk/PvZ-Portable/releases).
+
+Because the IPA is unsigned, it must be sideloaded onto your device. Choose a method below.
+
+## Sideloading methods
+
+<Tabs>
+  <Tab title="AltStore">
+    1. Install [AltStore](https://altstore.io/) on your Mac or PC and then on your device.
+    2. Open AltStore on your device and tap **My Apps** → **+**.
+    3. Select the downloaded `.ipa` file.
+    4. AltStore signs and installs the app using your Apple ID.
+
+    <Warning>
+      Free Apple ID signatures expire after 7 days. You must refresh the app in AltStore before expiry or it will stop launching.
+    </Warning>
+  </Tab>
+  <Tab title="TrollStore">
+    [TrollStore](https://github.com/opa334/TrollStore) supports **iOS 14.0–16.6.1** and installs apps permanently without signature expiry.
+
+    1. Install TrollStore on your device following the official TrollStore documentation for your iOS version.
+    2. Transfer the `.ipa` file to your device (via AirDrop, Files app, or a file transfer tool).
+    3. Open the `.ipa` in TrollStore and tap **Install**.
+
+    <Note>
+      TrollStore installs are permanent and do not expire. No Apple ID is required.
+    </Note>
+  </Tab>
+  <Tab title="Xcode with free Apple ID">
+    1. Open Xcode on your Mac and sign in with your Apple ID under **Settings** → **Accounts**.
+    2. Connect your device and trust the Mac on the device.
+    3. Create a new single-view Xcode project, set the bundle identifier to something unique, and select your free personal team.
+    4. Replace the built app with PvZ Portable, or use a tool such as `ios-deploy` or `ideviceinstaller` to install the `.ipa` directly.
+
+    <Warning>
+      Free Apple ID signatures expire after 7 days. You must rebuild and reinstall before expiry.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Importing game resources
+
+The app's Documents folder is accessible via iTunes/Finder file sharing and the iOS Files app. Transfer `main.pak` and the `properties/` folder into the app's Documents directory.
+
+<Tabs>
+  <Tab title="iTunes / Finder">
+    1. Connect your device to your Mac or PC.
+    2. Open Finder (macOS Catalina and later) or iTunes (Windows / older macOS).
+    3. Select your device, go to **Files**, and find **PvZ Portable** in the app list.
+    4. Drag `main.pak` and the `properties/` folder into the app's document area.
+  </Tab>
+  <Tab title="iOS Files app">
+    1. Open the **Files** app on your device.
+    2. Navigate to **On My iPhone/iPad** → **PvZ Portable**.
+    3. Copy or move `main.pak` and the `properties/` folder into this directory.
+
+    You can transfer files to your device first via AirDrop, iCloud Drive, or any other method supported by the Files app.
+  </Tab>
+</Tabs>
+
+After placing the files, launch PvZ Portable. The game reads resources from its Documents directory on startup.
+
+## Input
+
+SDL2 automatically maps touch events to mouse input, so the game is fully playable with a touchscreen. The original game's 4:3 aspect ratio and mouse-based input model are preserved — no touch-specific UI optimizations have been made, matching the behavior of the Android port.
+
+## Building from source
+
+You can build the unsigned IPA yourself using the included build script. Requirements: Xcode 15+, CMake 3.21+, and vcpkg with `VCPKG_ROOT` set.
+
+```bash
+./ios/build-ios.sh Release
+```
+
+The script configures CMake with the `arm64-ios` vcpkg triplet and the `ios/ports` overlay, builds with Xcode, and produces `build-ios/pvz-portable-ios.ipa`. See the [build overview](/building/overview) for general CMake background.

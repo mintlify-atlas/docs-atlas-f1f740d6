@@ -1,0 +1,110 @@
+---
+title: "Build overview"
+description: "System requirements, dependencies, CMake configuration options, and basic build commands for PvZ Portable."
+---
+
+## Prerequisites
+
+Before building PvZ Portable, ensure the following tools and libraries are available on your system.
+
+### Build tools
+
+| Tool | Notes |
+| ---- | ----- |
+| CMake | Required for project configuration |
+| Ninja | Recommended build system generator |
+| C/C++ compiler | gcc, clang, or MSVC with **C++20** support |
+| Standard library | libstdc++, libc++, or MSVC STL with C++20 support |
+
+### Runtime dependencies
+
+| Category | Libraries |
+| -------- | --------- |
+| Graphics | OpenGL ES 2.0 or OpenGL 2.1+ (auto-detected at runtime via SDL2) |
+| Audio | `libopenmpt`, `libogg`, `libvorbis`, `mpg123` |
+| Image | `libpng`, `libjpeg-turbo` |
+| Windowing / Input | `SDL2` |
+
+<Note>
+OpenGL ES 2.0 is the common subset supported by virtually all modern GPU APIs — every desktop OpenGL 2.1+ driver, mobile GPU, and game console inherits support. [ANGLE](https://chromium.googlesource.com/angle/angle) can optionally translate calls to DirectX, Metal, or Vulkan if needed.
+</Note>
+
+---
+
+## Basic build commands
+
+Run the following commands from the directory containing `CMakeLists.txt`:
+
+**Configure:**
+
+```bash
+cmake -G Ninja -B build
+```
+
+**Build:**
+
+```bash
+cmake --build build
+```
+
+---
+
+## Performance optimization
+
+Use the **Release** build type for the best performance:
+
+```bash
+cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+For advanced optimization, pass `-march=native` to fully utilize your CPU's instruction set:
+
+```bash
+cmake -G Ninja -B build \
+  -DCMAKE_C_FLAGS="-march=native" \
+  -DCMAKE_CXX_FLAGS="-march=native" \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+---
+
+## CMake configuration options
+
+Pass these options to the `cmake` configure command using `-D<OPTION>=<VALUE>`.
+
+| Option | Default | Description |
+| ------ | ------- | ----------- |
+| `PVZ_DEBUG` | `OFF` (`ON` in Debug builds) | Enable cheat keys, debug displays, and other debug features. |
+| `LIMBO_PAGE` | `ON` | Enable access to the limbo page which contains hidden levels. |
+| `DO_FIX_BUGS` | `OFF` | Apply community fixes for bugs in the official 1.2.0.1073 GOTY Edition. Note: many of these bugs are considered features by players. |
+| `CONSOLE` | `OFF` (`ON` in Debug builds) | Show a console window (Windows only). |
+| `BUILD_STATIC` | `OFF` | Link statically to create a standalone executable. Windows with MinGW-based toolchains only. Use a vcpkg `-static` triplet for MSVC instead. |
+
+### Example: enable debug features in a Release build
+
+To use cheat keys while keeping optimized performance:
+
+```bash
+cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DPVZ_DEBUG=ON
+cmake --build build
+```
+
+---
+
+## Platform-specific instructions
+
+For dependency installation and platform-specific build steps, see the platform pages:
+
+<CardGroup cols={2}>
+  <Card title="Build on Linux" icon="linux" href="/building/linux">
+    Arch Linux and Debian/Ubuntu instructions.
+  </Card>
+  <Card title="Build on Windows" icon="windows" href="/building/windows">
+    MSYS2 UCRT64 and MSVC + vcpkg instructions.
+  </Card>
+  <Card title="Build on macOS" icon="apple" href="/building/macos">
+    Homebrew dependency setup and app bundling.
+  </Card>
+</CardGroup>

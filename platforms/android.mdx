@@ -1,0 +1,67 @@
+---
+title: "Android"
+description: "Install and run PvZ Portable on Android 9.0+ using the prebuilt arm64-v8a APK."
+---
+
+<Info>
+  PvZ Portable does not include game assets. You must provide `main.pak` and the `properties/` folder from a legally purchased copy of Plants vs. Zombies: GOTY Edition. See the [game assets guide](/game-assets) for details.
+</Info>
+
+## Requirements
+
+| Requirement | Details |
+| ----------- | ------- |
+| Android version | 9.0 or later (API level 28+) |
+| Architecture | arm64-v8a (prebuilt APK) |
+
+## Getting the APK
+
+Download `pvz-portable-android-arm64-v8a.apk` from the [GitHub Releases page](https://github.com/wszqkzqk/PvZ-Portable/releases).
+
+## First launch setup
+
+<Steps>
+  <Step title="Install the APK">
+    Open the downloaded APK file. Android will prompt you to enable **Install from unknown sources** for your browser or file manager if you haven't already — follow the on-screen prompt to allow it, then proceed with installation.
+  </Step>
+  <Step title="Launch the app">
+    Open PvZ Portable from your app drawer. Because no game resources are present yet, a **resource import screen** appears automatically.
+  </Step>
+  <Step title="Import game resources">
+    On the resource import screen, select one of the following sources:
+
+    - **ZIP file** — a ZIP archive containing `main.pak` and `properties/` either at the ZIP root or inside a single wrapper directory (for example `PvZ/main.pak`).
+    - **Folder** — a folder that directly contains `main.pak` and `properties/`, or whose immediate subfolder does.
+
+    The app uses Android's **Storage Access Framework (SAF)** to access your files — no extra storage permissions are required.
+  </Step>
+  <Step title="Start the game">
+    Once the import succeeds, press **Start Game**.
+  </Step>
+</Steps>
+
+## Managing data later
+
+Long-press the app icon on your launcher to open the **Manage Data** shortcut. This returns you to the resource management screen where you can re-import resources, export saves, or import saves at any time.
+
+## Data storage
+
+All app data is stored at:
+
+```
+Android/data/io.github.wszqkzqk.pvzportable/files/
+```
+
+This path is inside Android's app-private external storage. No extra storage permissions are needed because all file access goes through the Storage Access Framework (SAF).
+
+## Save data compatibility
+
+Save files are interchangeable with desktop versions of PvZ Portable. Both global user data (`user*.dat`) and mid-level saves (`.v4` files) can be transferred between Android and Linux, Windows, macOS, or Nintendo Switch. See the [save data overview](/save-data/overview) for details.
+
+## Input
+
+SDL2 automatically maps touch events to mouse input, so the game is fully playable with a touchscreen. The original game's 4:3 aspect ratio and mouse-based input model are preserved — no touch-specific UI optimizations have been made.
+
+## Building for other architectures
+
+The prebuilt APK targets arm64-v8a only. If you need a different ABI (for example x86_64 for an emulator), you can build from source. See the [build overview](/building/overview) for general CMake instructions, and refer to the Android build job in `.github/workflows/ci.yml` for the full NDK toolchain setup.

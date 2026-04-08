@@ -1,80 +1,120 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Quick start"
+description: "Download a prebuilt binary, set up your game assets, and launch PvZ Portable in minutes."
 ---
 
-## Get started in three steps
+<Info>
+  PvZ Portable does not include game assets. You need `main.pak` and the `properties/` folder from a legally purchased copy of Plants vs. Zombies: GOTY Edition before you can play. See the [game assets guide](/game-assets) for details.
+</Info>
 
-Get your documentation site running locally and make your first customization.
+<Steps>
+  <Step title="Download a prebuilt binary">
+    Go to the [GitHub Releases page](https://github.com/wszqkzqk/PvZ-Portable/releases) and download the archive for your platform.
 
-### Step 1: Set up your local environment
+    Prebuilt binaries are available for Linux, Windows, macOS, Android (APK), iOS (unsigned IPA), WebAssembly, and Nintendo Switch.
+  </Step>
+  <Step title="Obtain your game assets">
+    You need `main.pak` and the `properties/` folder from your legally purchased copy of Plants vs. Zombies: GOTY Edition.
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    See the [game assets guide](/game-assets) for instructions on where to buy the game and how to locate these files after installation.
+  </Step>
+  <Step title="Place assets next to the executable">
+    Copy `main.pak` and the `properties/` folder into the same directory as the `pvz-portable` executable.
 
-### Step 2: Deploy your changes
+    ```
+    pvz-portable          # the binary
+    main.pak              # game data archive
+    properties/           # game strings and config
+    ```
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    The game searches for resources relative to the executable's directory, so you can launch it from any working directory and it will still find them.
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    <Tip>
+      You can also use extracted (unpacked) asset data instead of `main.pak` if you prefer to work with individual files directly.
+    </Tip>
+  </Step>
+  <Step title="Run the game">
+    Launch the executable directly. No installer is required.
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+    <Tabs>
+      <Tab title="Linux / macOS">
+        ```bash
+        ./pvz-portable
+        ```
+      </Tab>
+      <Tab title="Windows">
+        Double-click `pvz-portable.exe`, or run it from a terminal:
 
-### Step 3: Go live
+        ```bat
+        pvz-portable.exe
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+</Steps>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+## Default data paths
+
+Per-user writable files (settings, savegames, compiled caches, screenshots) are stored in the OS-recommended application data directory under `io.github.wszqkzqk/PvZPortable`.
+
+<Tabs>
+  <Tab title="Linux">
+    ```
+    ~/.local/share/io.github.wszqkzqk/PvZPortable/
+    ```
+  </Tab>
+  <Tab title="Windows">
+    ```
+    %APPDATA%\io.github.wszqkzqk\PvZPortable\
+    ```
+  </Tab>
+  <Tab title="macOS">
+    ```
+    ~/Library/Application Support/io.github.wszqkzqk/PvZPortable/
+    ```
+  </Tab>
+</Tabs>
+
+This directory contains the following subfolders and files:
+
+| Path | Description |
+|---|---|
+| `userdata/` | Player save files (profiles, adventure progress, coins, Zen Garden). |
+| `cache64/` or `cache32/` | Compiled binary caches (reanimation / compiled definitions). These are local startup artifacts and are **not** portable across platforms. The game transparently recompiles them when a cache or schema check fails. The 64-bit build uses `cache64/`; the 32-bit build uses `cache32/`. |
+| `registry.regemu` | Settings and registry emulation. |
+
+## Command-line parameters
+
+You can override the default resource and save data directories at launch.
+
+| Parameter | Description |
+|---|---|
+| `-resdir="<path>"` | Set the resource directory where `main.pak` and `properties/` are located. Does not affect where the game saves data. |
+| `-savedir="<path>"` | Set the save data directory where settings, savegames, caches, and screenshots are stored. Overrides the default OS-recommended path. |
+
+<Warning>
+  You **must** use the format `-param="<Your Path>"`. Space-separated values such as `-resdir path` are **not** supported.
+</Warning>
+
+<CodeGroup>
+
+```bash Linux / macOS
+./pvz-portable -resdir="/mnt/games/pvz-assets" -savedir="/mnt/saves/pvz"
+```
+
+```bat Windows
+pvz-portable.exe -resdir="D:\Games\PvZ\assets" -savedir="D:\Games\PvZ\saves"
+```
+
+</CodeGroup>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Game assets" icon="folder-open" href="/game-assets">
+    Learn which game version to use and how to fix cosmetic differences.
+  </Card>
+  <Card title="Introduction" icon="book-open" href="/introduction">
+    Read about supported platforms, key features, and the project's legal notice.
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

@@ -1,0 +1,87 @@
+---
+title: "Play in your browser"
+description: "Run PvZ Portable directly in your browser via WebAssembly — no install required."
+---
+
+<Info>
+  PvZ Portable does not include game assets. You must provide `main.pak` and the `properties/` folder from a legally purchased copy of Plants vs. Zombies: GOTY Edition. See the [game assets guide](/game-assets) for details.
+</Info>
+
+## Play online
+
+**[▶ Play Online](https://wszqkzqk.github.io/pvz-portable-wasm/pvz-portable.html)**
+
+No installation is needed. Open the link in your browser, load your game resources, and start playing.
+
+## How it works
+
+<Steps>
+  <Step title="Open the link">
+    Navigate to [https://wszqkzqk.github.io/pvz-portable-wasm/pvz-portable.html](https://wszqkzqk.github.io/pvz-portable-wasm/pvz-portable.html) in a modern browser.
+  </Step>
+  <Step title="Load game resources">
+    When prompted, provide your game assets using one of the following:
+
+    - **ZIP file** — a ZIP archive containing `main.pak` and `properties/` at the root or inside a single wrapper folder.
+    - **Folder** — select a folder that directly contains `main.pak` and `properties/`.
+  </Step>
+  <Step title="Click Start Game">
+    Once the resources are loaded, click **Start Game** to begin.
+  </Step>
+</Steps>
+
+<Note>
+  All files stay in your browser locally and are **never uploaded to any server**. The hosting site is purely static.
+</Note>
+
+## Save data
+
+Save data is stored in your **browser's IndexedDB** and persists between sessions in the same browser.
+
+Use the on-screen buttons to manage your saves:
+
+| Action | Description |
+| ------ | ----------- |
+| **Export saves** | Download your save data as a ZIP archive. |
+| **Import saves** | Load saves from a previously exported ZIP or from a folder. |
+
+Exported saves use the portable `.v4` format and are compatible with desktop and Switch builds of PvZ Portable. See the [save data overview](/save-data/overview) for details.
+
+## Browser compatibility
+
+The WebAssembly build requires a browser with SharedArrayBuffer and WebAssembly support. Current versions of Chrome, Firefox, Edge, and Safari all meet this requirement. The page must be served over HTTP — opening the HTML file directly as a local file (`file://`) will not work due to browser security restrictions.
+
+## Self-hosting
+
+Download the WASM build (`pvz-portable-wasm.zip`) from the [GitHub Releases page](https://github.com/wszqkzqk/PvZ-Portable/releases) and extract it. The archive contains:
+
+```
+pvz-portable.html
+pvz-portable.js
+pvz-portable.wasm
+```
+
+Serve the directory over HTTP. Opening the HTML file directly as a `file://` URL will not work.
+
+**Quick local server using Python:**
+
+```bash
+python3 -m http.server
+```
+
+Then open `http://localhost:8000/pvz-portable.html` in your browser.
+
+<Warning>
+  The HTML file **must** be served over HTTP (or HTTPS). Do not open it directly as a local file — the browser will block the WebAssembly module from loading.
+</Warning>
+
+## Building from source
+
+The WASM build uses [Emscripten](https://emscripten.org/). After setting up Emscripten (`emsdk`), configure and build with:
+
+```bash
+emcmake cmake -G Ninja -B build-wasm -DCMAKE_BUILD_TYPE=Release -DLIMBO_PAGE=OFF
+cmake --build build-wasm -j$(nproc)
+```
+
+The output files (`pvz-portable.html`, `pvz-portable.js`, `pvz-portable.wasm`) are placed in `build-wasm/`. See the CI workflow in `.github/workflows/ci.yml` for the complete build process including libopenmpt setup for Emscripten.

@@ -1,0 +1,225 @@
+---
+title: "Save converter tool"
+description: "Use the pvzp-v4-converter.py Python script to inspect, export to YAML, and reimport mid-level .v4 save files."
+---
+
+`scripts/pvzp-v4-converter.py` is a lossless bidirectional converter for `.v4` mid-level save files. It can display a human-readable summary of a save, convert it to an editable YAML file, and convert modified YAML back into a valid `.v4` save with a correct CRC-32 checksum.
+
+## Requirements
+
+- Python 3
+- [`PyYAML`](https://pypi.org/project/PyYAML/) (`pip install pyyaml`)
+
+No other third-party packages are required. The script uses only Python standard library modules (`argparse`, `base64`, `struct`, `sys`, `zlib`, `dataclasses`, `enum`, `pathlib`, `typing`) plus PyYAML.
+
+## Commands
+
+### `info` — view save summary
+
+Prints a human-readable summary of a `.v4` save file: level number, background, current sun count, wave progress, seed slot states, live plants on the field (with position and HP), live zombies (with position, HP, and status effects), lawn mower states, and end-of-level statistics.
+
+```bash
+python scripts/pvzp-v4-converter.py info ~/.local/share/io.github.wszqkzqk/PvZPortable/userdata/game1_13.v4
+```
+
+Example output:
+
+```
+============================================================
+PvZ-Portable Mid-Level Save File (v4 Format)
+============================================================
+
+[Game State]
+  Level: 13
+  Background: BACKGROUND_3_POOL
+  Sun: 350
+  Current Wave: 3 / 10
+  Paused: No
+  Level Complete: No
+
+[Seed Slots]
+  [1] Peashooter (Ready)
+  [2] Sunflower (Ready)
+  [3] Wall-nut (Recharging 12.50s/30.00s)
+  [4] Snow Pea (Ready)
+  [5] Cherry Bomb (Recharging 44.00s/50.00s)
+
+[Plants on Field]
+  [0, 0] Sunflower (HP: 300/300)
+  [0, 1] Peashooter (HP: 300/300)
+  ...
+
+[Zombies on Field]
+  [Row 0] Zombie (HP: 270, X: 690)
+  [Row 2] Conehead Zombie [Chilled] (HP: 560, X: 580)
+  ...
+
+[Lawn Mowers]
+  [Row 0] MOWER_LAWN (MOWER_READY)
+  ...
+
+[Statistics]
+  Coins Collected: 0
+  Diamonds Collected: 0
+  Plants Eaten: 0
+  Graves Cleared: 0
+```
+
+### `export` — convert `.v4` to YAML
+
+Converts a `.v4` file to a YAML file. The conversion is **lossless**: every byte of the original save is represented in the YAML, either as a human-readable field or as base64-encoded binary for complex internal data (particles, reanimations, trails, etc.).
+
+```bash
+python scripts/pvzp-v4-converter.py export \
+  ~/.local/share/io.github.wszqkzqk/PvZPortable/userdata/game1_13.v4 \
+  level.yaml
+```
+
+Optional flag:
+
+```bash
+# Expand zombies_in_wave into a human-readable list of waves
+python scripts/pvzp-v4-converter.py export --expand-waves \
+  ~/.local/share/io.github.wszqkzqk/PvZPortable/userdata/game1_13.v4 \
+  level.yaml
+```
+
+### `import` — convert YAML back to `.v4`
+
+Converts a (possibly edited) YAML file back to a valid `.v4` save file with correct magic bytes, version, payload size, and CRC-32 checksum.
+
+```bash
+python scripts/pvzp-v4-converter.py import level.yaml \
+  ~/.local/share/io.github.wszqkzqk/PvZPortable/userdata/game1_13.v4
+```
+
+<Warning>
+Always back up your `.v4` file before importing from YAML. The import command overwrites the output path without prompting. An invalid YAML or an incorrect field value can produce a corrupted save that the game will reject.
+
+```bash
+# Back up first
+mv ~/.local/share/io.github.wszqkzqk/PvZPortable/userdata/game1_13.v4 \
+   ~/.local/share/io.github.wszqkzqk/PvZPortable/userdata/game1_13.v4.bak
+
+# Then import
+python scripts/pvzp-v4-converter.py import level.yaml \
+  ~/.local/share/io.github.wszqkzqk/PvZPortable/userdata/game1_13.v4
+```
+</Warning>
+
+## Export-edit-import workflow
+
+<Steps>
+  <Step title="Export the save to YAML">
+    ```bash
+    python scripts/pvzp-v4-converter.py export \
+      ~/.local/share/io.github.wszqkzqk/PvZPortable/userdata/game1_13.v4 \
+      level.yaml
+    ```
+  </Step>
+  <Step title="Back up the original .v4 file">
+    ```bash
+    cp ~/.local/share/io.github.wszqkzqk/PvZPortable/userdata/game1_13.v4 \
+       ~/.local/share/io.github.wszqkzqk/PvZPortable/userdata/game1_13.v4.bak
+    ```
+  </Step>
+  <Step title="Edit level.yaml with any text editor">
+    Modify the fields you want to change. Readable fields (sun, wave counters, plant and zombie states, seed packet cooldowns, etc.) can be edited as plain values. Complex binary data is preserved as base64 strings — leave those untouched unless you know what you are doing.
+  </Step>
+  <Step title="Import the modified YAML back">
+    ```bash
+    python scripts/pvzp-v4-converter.py import level.yaml \
+      ~/.local/share/io.github.wszqkzqk/PvZPortable/userdata/game1_13.v4
+    ```
+  </Step>
+  <Step title="Launch the game and load the save">
+    Resume the level. If the game rejects the save (CRC mismatch, invalid field), restore from the backup created in step 2.
+  </Step>
+</Steps>
+
+## YAML structure
+
+The exported YAML maps directly to the internal `SaveFile` data model. Top-level keys:
+
+```yaml
+_format: PvZ-Portable Save v4
+_version: 1
+_chunk_order: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+
+board:
+  level: 13
+  background: BACKGROUND_3_POOL
+  sun_money: 350
+  current_wave: 3
+  num_waves: 10
+  paused: false
+  level_complete: false
+  # ... many more board fields
+
+zombies_header:
+  free_list_head: 0
+  max_used_count: 3
+  size: 2
+  next_key: 772
+  max_size: 100
+
+zombies:
+  - _id: 257
+    _base: {x: 690, y: 80, width: 46, height: 115, visible: true, row: 0, render_order: 180}
+    zombie_type: ZOMBIE_NORMAL
+    body_health: 270
+    body_max_health: 270
+    # ... more fields
+
+plants:
+  - _id: 257
+    _base: {x: 0, y: 96, width: 70, height: 70, visible: true, row: 0, render_order: 96}
+    seed_type: SEED_SUNFLOWER
+    plant_health: 300
+    plant_max_health: 300
+    # ... more fields
+
+seedbank:
+  num_packets: 5
+  cutscene_darken: 0
+  conveyor_belt_counter: 0
+
+seedpackets:
+  - _index: 0
+    packet_type: SEED_PEASHOOTER
+    refresh_counter: 0
+    refresh_time: 750
+    active: true
+    refreshing: false
+    times_used: 1
+
+binary_chunks:
+  PROJECTILES: <base64>
+  PARTICLE_EMITTERS: <base64>
+  # ... other binary chunks
+```
+
+Human-readable chunks (editable as structured data): `board`, `zombies`, `plants`, `mowers`, `griditems`, `seedbank`, `seedpackets`, `challenge`.
+
+Binary chunks (preserved as base64, not meant for manual editing): `PROJECTILES`, `COINS`, `PARTICLE_EMITTERS`, `PARTICLE_PARTICLES`, `PARTICLE_SYSTEMS`, `REANIMATIONS`, `TRAILS`, `ATTACHMENTS`, `CURSOR`, `CURSOR_PREVIEW`, `ADVICE`, `MUSIC`.
+
+<Info>
+The converter is fully lossless. Running export followed immediately by import with no edits produces a byte-identical `.v4` file (same payload, same CRC-32).
+</Info>
+
+## Use cases
+
+<CardGroup cols={2}>
+  <Card title="Debugging" icon="bug">
+    Inspect the exact state of every game object at the moment of a save. Useful when investigating gameplay bugs or unexpected behavior mid-level.
+  </Card>
+  <Card title="Save editing" icon="pen-to-square">
+    Modify sun count, seed packet cooldowns, plant health, zombie positions, or wave state for testing purposes.
+  </Card>
+  <Card title="Cross-platform transfer" icon="arrows-left-right">
+    `.v4` files are already portable between platforms, but the converter lets you inspect a save from one platform before loading it on another, or fix any edge case manually.
+  </Card>
+  <Card title="Format research" icon="magnifying-glass">
+    The YAML output exposes every TLV field ID and value, making it straightforward to understand how the format encodes specific game states.
+  </Card>
+</CardGroup>

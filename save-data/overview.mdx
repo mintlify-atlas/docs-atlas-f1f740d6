@@ -1,0 +1,77 @@
+---
+title: "Save data overview"
+description: "How PvZ Portable stores global user data and mid-level save states, where those files live on each platform, and how portability works."
+---
+
+PvZ Portable uses two distinct types of save data. They have different goals, different file names, and different portability guarantees.
+
+## Types of save data
+
+### Global User Data
+
+Files: `users.dat`, `user1.dat`, `user2.dat`, …
+
+Stores everything that persists across sessions: profile info, adventure progress, coins, Zen Garden plants, mini-game high scores, and unlocked content. This format uses explicit field-by-field serialization — the same approach used by the original PC game — so these files are **fully compatible with the original PvZ GOTY Edition** and are already portable by design. No conversion is needed to move `user*.dat` files between platforms.
+
+### Mid-Level Save States
+
+Files: `game1_0.v4`, `game1_1.v4`, … (legacy: `game1_0.dat`, …)
+
+Stores the exact state of a level at the moment "Save and Exit" was pressed: every zombie, plant, projectile, coin, lawn mower, seed packet cooldown, particle system, and music state. Two formats exist:
+
+| Extension | Description | Cross-platform |
+|-----------|-------------|----------------|
+| `.v4` | Portable format. Serializes each field individually using Type-Length-Value (TLV) tags. | Yes — share freely between Windows, Linux, macOS, Android, Switch, and more |
+| `.dat` | Legacy dump from old versions. Raw memory dump of C++ structs. | No — architecture- and compiler-specific; sharing across platforms causes crashes |
+
+The game **always writes `.v4`**. Legacy `.dat` files are read only for migration: on first load the game re-saves as `.v4` and deletes the `.dat`.
+
+<Note>
+If both a `.v4` and a `.dat` file exist for the same slot, the game loads the `.v4` and ignores the `.dat`.
+</Note>
+
+## Save data locations
+
+Per-user writable data is stored in the OS-recommended application data path under `io.github.wszqkzqk/PvZPortable` (desktop) or the platform equivalent. The `userdata/` subfolder holds save files.
+
+| Platform | Path |
+|----------|------|
+| Linux | `~/.local/share/io.github.wszqkzqk/PvZPortable/` |
+| Windows | `%APPDATA%\io.github.wszqkzqk\PvZPortable\` |
+| macOS | `~/Library/Application Support/io.github.wszqkzqk/PvZPortable/` |
+| Android | `Android/data/io.github.wszqkzqk.pvzportable/files/` |
+| iOS / iPadOS | App Documents directory (visible in the Files app as "PvZ Portable") |
+| Nintendo Switch | `sdmc:/switch/PvZPortable` |
+
+<Tip>
+You can override the save data directory at launch with `-savedir="<path>"`. The format must be `-param="<value>"` — space-separated values are not supported.
+</Tip>
+
+Other folders alongside `userdata/` include:
+- `cache64/` or `cache32/` — compiled reanimation/definition caches (local only, not portable)
+- `registry.regemu` — settings and registry emulation
+
+## Cross-platform save transfer
+
+`.v4` mid-level saves can be copied directly between platforms. For example, a save created mid-level on x86_64 Linux loads correctly on an ARM Nintendo Switch or a LoongArch machine. See [The .v4 save format](/save-data/v4-format) for the technical details behind this guarantee.
+
+`user*.dat` global saves are also portable and can be moved freely between any platforms.
+
+## Legacy `.dat` migration
+
+If you have old `.dat` mid-level saves from a previous version:
+
+1. Launch the game normally — it detects the `.dat` file and loads it.
+2. The game immediately re-saves the level state as `.v4`.
+3. The old `.dat` is deleted automatically after the migration succeeds.
+
+No manual steps are required. After migration the `.v4` file is the only copy.
+
+<CardGroup cols={2}>
+  <Card title="The .v4 save format" icon="file-code" href="/save-data/v4-format">
+    How Format v4 works, why it was needed, and developer guidelines for extending it.
+  </Card>
+  <Card title="Save converter tool" icon="wrench" href="/save-data/converter-tool">
+    Inspect, export to YAML, and import back with the Python converter script.
+  </Card>
+</CardGroup>

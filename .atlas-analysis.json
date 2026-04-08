@@ -1,0 +1,84 @@
+{
+  "projectType": "general",
+  "projectName": "PvZ Portable",
+  "projectDescription": "A cross-platform community reimplementation of Plants vs. Zombies GOTY Edition, built with C++/SDL2/OpenGL ES 2.0, targeting Linux, Windows, macOS, Android, iOS, WebAssembly, and Nintendo Switch.",
+  "theme": "palm",
+  "primaryColor": "#2f1d4c",
+  "lightColor": "#8a84a4",
+  "darkColor": "#b7928c",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "game-assets"
+            ]
+          },
+          {
+            "group": "Building from Source",
+            "pages": [
+              "building/overview",
+              "building/linux",
+              "building/windows",
+              "building/macos"
+            ]
+          },
+          {
+            "group": "Platform Guides",
+            "pages": [
+              "platforms/android",
+              "platforms/ios",
+              "platforms/web",
+              "platforms/nintendo-switch"
+            ]
+          },
+          {
+            "group": "Save Data & Tools",
+            "pages": [
+              "save-data/overview",
+              "save-data/v4-format",
+              "save-data/converter-tool"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "contributing/guidelines",
+              "contributing/license"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Cross-platform: Linux, Windows, macOS, Android, iOS, WebAssembly, Nintendo Switch, 3DS",
+    "100% authentic GOTY gameplay recreation",
+    "SDL2 + OpenGL ES 2.0 rendering (desktop OpenGL 2.1 fallback)",
+    "Resizable window support (not possible in original game)",
+    "Portable mid-level save format (.v4) via TLV serialization",
+    "Compatible with original PvZ GOTY global user data (user*.dat)",
+    "Multilingual support: EN, ZH, DE, ES, FR, IT",
+    "32-bit and 64-bit builds, multiple CPU architectures (x86_64, aarch64, riscv64, loongarch64)",
+    "Unicode path support on all platforms",
+    "Save conversion tool (pvzp-v4-converter.py) with YAML export/import"
+  ],
+  "publicApiSurface": [
+    "pvz-portable executable (game binary)",
+    "-resdir=\"<path>\" CLI flag (set resource directory)",
+    "-savedir=\"<path>\" CLI flag (set save data directory)",
+    "CMake option: PVZ_DEBUG (enable cheat keys and debug features)",
+    "CMake option: LIMBO_PAGE (access hidden levels)",
+    "CMake option: DO_FIX_BUGS (community bug fixes)",
+    "CMake option: BUILD_STATIC (standalone static executable)",
+    "CMake option: CONSOLE (show Windows console)",
+    "scripts/pvzp-v4-converter.py info <file> (view save stats)",
+    "scripts/pvzp-v4-converter.py export <file> <yaml> (export to YAML)",
+    "scripts/pvzp-v4-converter.py import <yaml> <file> (import from YAML)"
+  ]
+}

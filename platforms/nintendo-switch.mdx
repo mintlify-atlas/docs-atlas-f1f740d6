@@ -1,0 +1,100 @@
+---
+title: "Nintendo Switch"
+description: "Run PvZ Portable on Nintendo Switch as a homebrew NRO using the Homebrew Launcher."
+---
+
+<Info>
+  PvZ Portable does not include game assets. You must provide `main.pak` and the `properties/` folder from a legally purchased copy of Plants vs. Zombies: GOTY Edition. See the [game assets guide](/game-assets) for details.
+</Info>
+
+## Status
+
+PvZ Portable works on real Nintendo Switch hardware. 
+
+<Warning>
+  **Kenji-NX** (an alternative Switch firmware/emulator) crashes on boot and is not supported.
+</Warning>
+
+## Getting the NRO
+
+Download `pvz-portable.nro` from the [GitHub Releases page](https://github.com/wszqkzqk/PvZ-Portable/releases).
+
+## Installation
+
+<Steps>
+  <Step title="Create the game directory">
+    On your Switch's SD card, create the following directory if it does not already exist:
+
+    ```
+    sdmc:/switch/PvZPortable/
+    ```
+  </Step>
+  <Step title="Copy the NRO">
+    Copy `pvz-portable.nro` into the `sdmc:/switch/PvZPortable/` directory.
+  </Step>
+  <Step title="Add game assets">
+    Place `main.pak` and the `properties/` folder in the **same directory** as the NRO:
+
+    ```
+    sdmc:/switch/PvZPortable/
+      pvz-portable.nro
+      main.pak
+      properties/
+    ```
+  </Step>
+  <Step title="Launch via Homebrew Launcher">
+    Boot your Switch into the Homebrew Launcher, find **PvZ Portable** in the list, and launch it.
+  </Step>
+</Steps>
+
+## Data path
+
+All game data (resources, saves, settings) lives under:
+
+```
+sdmc:/switch/PvZPortable/
+```
+
+## Save data compatibility
+
+Save files use the portable `.v4` format and can be transferred between Nintendo Switch and Linux, Windows, macOS, or Android builds of PvZ Portable. See the [save data overview](/save-data/overview) for details.
+
+## Building from source
+
+Building for Switch requires the [devkitPro](https://devkitpro.org/) toolchain with `devkitA64`.
+
+### Toolchain setup
+
+Install devkitPro and the `devkitA64` package following the [devkitPro Getting Started guide](https://devkitpro.org/wiki/Getting_Started). Then source the Switch environment variables:
+
+```bash
+source $DEVKITPRO/switchvars.sh
+```
+
+### Build steps
+
+Configure with the Switch cross-compilation toolchain and the `NINTENDO_SWITCH=ON` CMake flag:
+
+```bash
+mkdir build-switch
+aarch64-none-elf-cmake -B build-switch \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_FLAGS_RELEASE=-O2 \
+  -DNINTENDO_SWITCH=ON
+cmake --build build-switch
+```
+
+The build produces `build-switch/pvz-portable.nro`.
+
+### Switch-specific files
+
+The following files in the repository are used exclusively for the Switch build:
+
+| File | Purpose |
+| ---- | ------- |
+| `icon-switch.jpg` | App icon displayed in the Homebrew Launcher. |
+| `src/SexyAppFramework/platform/switch/` | Switch-specific source files (window setup, input handling). |
+
+<Note>
+  libopenmpt must be built and installed for the Switch target before building PvZ Portable. See the commented-out Switch job in `.github/workflows/ci.yml` for a reference build process.
+</Note>

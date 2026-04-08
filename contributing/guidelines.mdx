@@ -1,0 +1,161 @@
+---
+title: "Contributing guidelines"
+description: "How to contribute to PvZ Portable, including code style conventions, what to submit, and what to avoid."
+---
+
+Contributions to PvZ Portable are welcome. This page covers the ground rules, coding conventions, and what kinds of contributions are accepted or rejected.
+
+<Warning>
+  Code generated directly through reverse engineering of the original game binary is **not accepted** under any circumstances. The entire codebase is derived from publicly available community research and game testing only.
+</Warning>
+
+## How to contribute
+
+<Steps>
+  <Step title="Check existing issues">
+    Before opening a new issue or starting work on a feature, search [existing issues](https://github.com/wszqkzqk/PvZ-Portable/issues) to avoid duplicates. Someone may already be working on the same thing.
+  </Step>
+  <Step title="Open an issue for bugs or feature requests">
+    If you find a bug or want to request a feature, open an issue on GitHub. Include:
+
+    - A clear description of the problem or proposal.
+    - Steps to reproduce the bug (if applicable).
+    - Your platform, build type (32/64-bit), and operating system version.
+    - Any relevant log output or screenshots.
+  </Step>
+  <Step title="Fork, branch, and make your changes">
+    Fork the repository, create a branch for your change, and implement your fix or feature. Follow the code style guidelines described below.
+  </Step>
+  <Step title="Open a pull request">
+    Submit a pull request against the main branch. Describe what your change does and why. Link to any related issues.
+  </Step>
+</Steps>
+
+## What is and is not accepted
+
+<CardGroup cols={2}>
+  <Card title="Accepted" icon="circle-check">
+    - Bug fixes derived from community research or game testing
+    - Cross-platform compatibility improvements
+    - New platform ports (e.g., additional console targets)
+    - Save format improvements following Format v4 guidelines
+    - Build system or dependency updates
+    - Documentation corrections and improvements
+  </Card>
+  <Card title="Not accepted" icon="circle-x">
+    - Code generated directly from reverse engineering the original binary
+    - Copyrighted game assets (images, audio, fonts, data files)
+    - Changes that break compatibility with legal `user*.dat` save files
+    - Code that violates the LGPL-3.0-or-later license
+  </Card>
+</CardGroup>
+
+<Note>
+  This project is based **solely** on community research (such as [植物大战僵尸吧](https://tieba.baidu.com/f?ie=utf-8&kw=%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8), [PVZ Wiki](https://wiki.pvz1.com/doku.php?id=home), and [PvZ Tools](https://pvz.tools/memory/)) and direct game testing. The maintainers never reverse-engineered the original binary, and the project cannot accept contributions that did.
+</Note>
+
+## Code style
+
+### C++ standard
+
+The project requires **C++20**. Your compiler and standard library must support C++20 features. Acceptable toolchains include GCC, Clang, and MSVC with `libstdc++`, `libc++`, or MSVC STL.
+
+### SexyAppFramework coding conventions
+
+The codebase follows the coding philosophy documented in the original SexyAppFramework. Understanding these conventions is important when modifying any code under `src/SexyAppFramework/`.
+
+<AccordionGroup>
+  <Accordion title="Public member data over accessor methods">
+    The framework exposes many class properties directly as public member data instead of wrapping them in getter/setter methods. For example, the window caption of the application is set by assigning directly to `mTitle` on the application object before the window is created — not through a `setTitle()` call.
+
+    ```cpp
+    // Correct — direct member assignment
+    mTitle = "PvZ Portable";
+
+    // Not the SexyAppFramework style
+    setTitle("PvZ Portable");
+    ```
+
+    This convention reduces the amount of boilerplate required to implement a class and is intentional in the framework design.
+  </Accordion>
+  <Accordion title="Variable prefix notation">
+    Variables use a consistent prefix notation to indicate their scope:
+
+    | Prefix | Meaning | Example |
+    |--------|---------|---------|
+    | `m` | Class member variable | `mTitle`, `mBuildNum`, `mUserName` |
+    | `the` | Function or method parameter | `theWindow`, `theParamName`, `theParamValue` |
+    | `a` | Local variable within a function | `aResult`, `aCount` |
+
+    ```cpp
+    void SexyApp::HandleCmdLineParam(const std::string& theParamName,
+                                     const std::string& theParamValue) {
+        // theParamName and theParamValue are parameters (the-prefix)
+        // mTitle is a class member (m-prefix)
+        if (theParamName == "title") {
+            std::string aNewTitle = theParamValue; // aNewTitle is local (a-prefix)
+            mTitle = aNewTitle;
+        }
+    }
+    ```
+
+    Follow this convention for all new code in the SexyAppFramework directory.
+  </Accordion>
+  <Accordion title="Namespacing">
+    SexyAppFramework code lives in the `Sexy` namespace. All new classes and functions added to the framework should be placed inside `namespace Sexy { ... }`.
+
+    ```cpp
+    namespace Sexy
+    {
+
+    class MyNewWidget : public Widget
+    {
+    public:
+        int   mSomeProperty;
+        // ...
+    };
+
+    } // namespace Sexy
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Save format guidelines (Format v4)
+
+When modifying or extending the portable `.v4` mid-level save format, follow these rules:
+
+- Add new fields as new TLV IDs. **Do not reuse existing IDs.**
+- Provide sensible defaults for missing fields when loading older saves to maintain backward compatibility.
+- Never raw-dump structs to disk. Serialize each field explicitly using fixed-width primitives.
+
+### General guidelines
+
+- Use `std::thread` for threading and `std::filesystem` for file system operations.
+- Use UTF-8 encoding throughout the program.
+- Prefer portable constructs that work across little-endian and big-endian architectures.
+- Test builds on more than one platform if possible, especially for changes that touch platform-specific code paths.
+
+## Reporting bugs
+
+When reporting a bug, include:
+
+- Your **platform** (Linux, Windows, macOS, Android, etc.)
+- Your **build type**: 32-bit or 64-bit, and whether it is a Release or Debug build
+- Your **game asset version** (e.g., 1.2.0.1073 EN, 1.2.0.1096 Steam)
+- **Steps to reproduce** the issue
+- Any **error output** or crash information
+
+<Tip>
+  Check the [existing issues](https://github.com/wszqkzqk/PvZ-Portable/issues) before opening a new one. Your bug may already be tracked or fixed in a recent commit.
+</Tip>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="License" icon="scale-balanced" href="/contributing/license">
+    Understand the LGPL-3.0-or-later license terms that govern contributions to this project.
+  </Card>
+  <Card title="Building from source" icon="wrench" href="/building/overview">
+    Set up your development environment and build PvZ Portable from source.
+  </Card>
+</CardGroup>

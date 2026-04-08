@@ -1,0 +1,104 @@
+---
+title: "Build on Windows"
+description: "Install dependencies and build PvZ Portable on Windows using MSYS2 UCRT64 or MSVC with vcpkg."
+---
+
+## Choose a toolchain
+
+<Tabs>
+  <Tab title="MSYS2 UCRT64">
+    ### Install MSYS2
+
+    Download and install [MSYS2](https://www.msys2.org/), then open the **UCRT64** shell.
+
+    ### Install dependencies
+
+    ```bash
+    pacman -S --needed base-devel mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-libjpeg-turbo mingw-w64-ucrt-x86_64-libopenmpt mingw-w64-ucrt-x86_64-libogg mingw-w64-ucrt-x86_64-libpng mingw-w64-ucrt-x86_64-libvorbis mingw-w64-ucrt-x86_64-mpg123 mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-SDL2
+    ```
+
+    ### Build
+
+    <Steps>
+      <Step title="Clone the repository">
+        ```bash
+        git clone https://github.com/wszqkzqk/PvZ-Portable.git
+        cd PvZ-Portable
+        ```
+      </Step>
+      <Step title="Configure with CMake">
+        ```bash
+        cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCONSOLE=OFF
+        ```
+      </Step>
+      <Step title="Compile">
+        ```bash
+        cmake --build build
+        ```
+
+        The binary is at `build/pvz-portable.exe`.
+      </Step>
+    </Steps>
+
+    ### Standalone executable (static linking)
+
+    Add `-DBUILD_STATIC=ON` to produce a self-contained `.exe` that does not require redistributable DLLs:
+
+    ```bash
+    cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCONSOLE=OFF -DBUILD_STATIC=ON
+    cmake --build build
+    ```
+  </Tab>
+  <Tab title="MSVC + vcpkg">
+    ### Prerequisites
+
+    - Visual Studio 2022 (or the Build Tools) with the **Desktop development with C++** workload
+    - [vcpkg](https://vcpkg.io/) installed and bootstrapped; set the `VCPKG_ROOT` environment variable to its path
+    - [Ninja](https://ninja-build.org/) (install via `choco install ninja` or include it with Visual Studio)
+
+    <Note>
+    vcpkg in manifest mode reads `vcpkg.json` from the repository root and installs all required libraries automatically during the CMake configure step.
+    </Note>
+
+    ### Build
+
+    <Steps>
+      <Step title="Clone the repository">
+        ```bash
+        git clone https://github.com/wszqkzqk/PvZ-Portable.git
+        cd PvZ-Portable
+        ```
+      </Step>
+      <Step title="Open a Developer PowerShell and configure">
+        ```powershell
+        cmake -G "Ninja" -B build `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DCONSOLE=OFF `
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static
+        ```
+
+        Using `x64-windows-static` produces a fully static executable without runtime DLL dependencies. To link dynamically, use `x64-windows` instead.
+      </Step>
+      <Step title="Compile">
+        ```powershell
+        cmake --build build
+        ```
+
+        The binary is at `build/pvz-portable.exe`.
+      </Step>
+    </Steps>
+
+    <Warning>
+    `BUILD_STATIC=ON` is not supported for MSVC. Use a vcpkg `-static` triplet (such as `x64-windows-static`) to produce a standalone executable instead.
+    </Warning>
+  </Tab>
+</Tabs>
+
+---
+
+## Next steps
+
+Place `main.pak` and the `properties/` folder next to `pvz-portable.exe`, then run the executable. Save data is written to `%APPDATA%\io.github.wszqkzqk\PvZPortable\`.
+
+See the [build overview](/building/overview) for a full list of CMake configuration options.

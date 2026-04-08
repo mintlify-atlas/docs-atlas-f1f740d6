@@ -1,0 +1,96 @@
+---
+title: "Obtaining game assets"
+description: "How to obtain and set up the game files required to play PvZ Portable."
+---
+
+PvZ Portable is a reimplementation of the game engine only — it does **not** include any copyrighted assets. You must supply your own game files from a legally purchased copy of Plants vs. Zombies: GOTY Edition.
+
+<Warning>
+  You **must** own a legal copy of Plants vs. Zombies: GOTY Edition to use PvZ Portable. Do not use pirated or illegally obtained game files.
+</Warning>
+
+## Where to buy
+
+You can purchase Plants vs. Zombies: GOTY Edition from:
+
+- **EA's official website** — [ea.com/games/plants-vs-zombies/plants-vs-zombies](https://www.ea.com/games/plants-vs-zombies/plants-vs-zombies)
+- **Steam** — [Plants vs. Zombies GOTY Edition on Steam](https://store.steampowered.com/app/3590/Plants_vs_Zombies_GOTY_Edition/)
+
+## What files you need
+
+After purchasing and installing the game, locate and copy the following two items into the same directory as the `pvz-portable` executable:
+
+| File / folder | Description |
+|---|---|
+| `main.pak` | The main game data archive containing all game assets. |
+| `properties/` | A folder containing game strings, configuration files, and layout definitions. |
+
+On Windows, the installed game files are typically found in the game's installation directory (e.g. `C:\ProgramData\PopCap Games\PlantsVsZombies\` for the standalone version, or the Steam library folder for the Steam version). On Steam you can right-click the game in your library, select **Manage → Browse local files** to open the installation folder directly.
+
+You can also use extracted (unpacked) asset data instead of `main.pak` if you prefer to work with individual files directly.
+
+## Game version compatibility
+
+PvZ Portable is designed and tested against **GOTY Edition 1.2.0.1073 EN** (the standalone PopCap release). Other versions are fully playable — all game mechanics work correctly — but may have minor cosmetic UI text differences caused by renamed string keys between versions.
+
+| Version | Language | Notes |
+|---|---|---|
+| **1.2.0.1073 EN** | English | **Recommended.** Best out-of-box experience; no cosmetic issues. |
+| 1.2.0.1096 Steam | English (Steam) | Fully playable; minor cosmetic text differences (see below). |
+| 1.2.0.1093 DE/ES/FR/IT | German, Spanish, French, Italian | Fully playable; minor cosmetic text differences (see below). |
+| 1.1.0.1056 ZH | Chinese (based on 1.2.0.1073) | Fully playable; minor cosmetic text differences (see below). |
+
+<Tip>
+  Use the **1.2.0.1073 EN** asset package for the best out-of-box experience. It requires no additional configuration.
+</Tip>
+
+## Known cosmetic differences with non-1.2.0.1073 EN assets
+
+If you are using any version other than 1.2.0.1073 EN, you may notice minor cosmetic issues caused by renamed string keys. These do not affect gameplay.
+
+<Accordion title="Cosmetic differences (non-1.2.0.1073 EN assets)">
+
+| Issue | Cause |
+|---|---|
+| **Almanac blue description text missing** | In 1.2.0.1096, the plain-text introductory paragraph was split out from `[XXX_DESCRIPTION]` into a new `[XXX_DESCRIPTION_HEADER]` key. The engine only reads `[XXX_DESCRIPTION]`, so the header text is never displayed. |
+| **"Restart" button label missing** | The key `[RESTART_LEVEL]` (used for the button label) was renamed to `[RESTART_LEVEL_BUTTON]` in 1.2.0.1096. |
+| **Unencountered zombie shows `???`** instead of `(not encountered yet)` | The string `[NOT_ENCOUNTERED_YET]` changed its value to `???` in 1.2.0.1096; the old descriptive text was moved to a new key `[NOT_ENCOUNTERED_YET_DESCRIPTION]`. |
+| **Crazy Dave's plant sell price shows 1/10 of the correct value** | In 1.2.0.1073, the string template `[CRAZY_DAVE_1700]` contains a trailing `0` after `{SELL_PRICE}` (i.e. `${SELL_PRICE}0`) because the engine passes the price divided by 10. In 1.2.0.1096 the trailing `0` was removed, so the displayed price becomes 1/10 of the intended amount. |
+
+</Accordion>
+
+## How to fix cosmetic differences
+
+All of the cosmetic issues above can be resolved by creating a `properties/default.xml` file alongside your game data and adding the missing or corrected string entries.
+
+The engine loads `properties/default.xml` (and `properties/Layout.xml`, if present) **after** `LawnStrings.txt`. Any keys defined in `default.xml` override the corresponding values from `LawnStrings.txt`, so you can patch individual strings without modifying the original files.
+
+For example, to restore the `[RESTART_LEVEL]` button label when using 1.2.0.1096 assets:
+
+```xml
+<string key="RESTART_LEVEL">Restart</string>
+```
+
+When `default.xml` is absent, the engine falls back to built-in English defaults.
+
+## Multilingual support
+
+PvZ Portable fully supports non-English GOTY editions. The engine:
+
+- Handles **BOM-encoded text files** transparently.
+- Converts **legacy Windows-1252 encodings to UTF-8** automatically.
+
+This means localized `LawnStrings.txt` files from the German, Spanish, French, Italian, and Chinese editions load correctly without any manual re-encoding.
+
+If `properties/default.xml` and/or `properties/Layout.xml` exist in the game data directory, they are loaded **after** `LawnStrings.txt` and can override any string value. Both files are optional; when absent, built-in English defaults are used. Because `default.xml` takes priority over `LawnStrings.txt`, you can create or edit your own `default.xml` to add or override any string key — making it straightforward to fix version-specific display issues without modifying the engine.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quick start" icon="rocket" href="/quickstart">
+    Place your assets and launch the game.
+  </Card>
+  <Card title="Introduction" icon="book-open" href="/introduction">
+    Learn about supported platforms and key features.
+  </Card>
+</CardGroup>
